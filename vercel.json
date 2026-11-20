@@ -1,33 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["cdg1"],
-  "services": {
-    "api": {
-      "root": "apps/api",
-      "framework": "express",
-      "functions": {
-        "*": {
-          "includeFiles": "package.json"
-        }
-      }
-    },
-    "web": {
-      "root": "apps/web",
-      "framework": "vite"
-    }
-  },
+  "framework": "vite",
+  "buildCommand": "npm run build:shared && npm run build:web",
+  "outputDirectory": "apps/web/dist",
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": {
-        "service": "api"
-      }
+      "destination": "/api/index"
     },
     {
       "source": "/(.*)",
-      "destination": {
-        "service": "web"
-      }
+      "destination": "/index.html"
     }
   ]
 }
