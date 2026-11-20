@@ -1,4 +1,4 @@
-import { app } from './app.mjs';
+import { app } from './app.js';
 import { config } from './config/index.js';
 import { remindersService } from './modules/reminders/reminders.service.js';
 
