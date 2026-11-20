@@ -3,6 +3,7 @@
   <component name="RecentFilesState">
     <option name="recentFileUrls">
       <list>
+        <option value="file://$PROJECT_DIR$/.gitignore" />
         <option value="file://$PROJECT_DIR$/.env.example" />
         <option value="file://$PROJECT_DIR$/.env" />
         <option value="file://$PROJECT_DIR$/.dockerignore" />

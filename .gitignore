@@ -14,4 +14,14 @@ volumes/functions/hello/**
 test.http
 docker-compose.override.yml
 .supabase-version
-backups
+.env.local
+.env.backup
+volumes/db/pgdata
+node_modules
+*/node_modules
+**/node_modules
+.DS_Store
+.DS_Store?
+**/.DS_Store
+**/.DS_Store?
+.env.old
