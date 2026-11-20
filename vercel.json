@@ -1,10 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "bunVersion": "1.x",
   "services": {
     "api": {
       "root": "apps/api",
-      "framework": "express"
+      "framework": "express",
+      "functions": {
+        "*": {
+          "includeFiles": "package.json"
+        }
+      }
     },
     "web": {
       "root": "apps/web",
