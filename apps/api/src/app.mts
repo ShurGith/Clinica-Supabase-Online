@@ -66,3 +66,6 @@ app.post('/api/v1/reminders/run', blockWhatsAppSending, async (req, res, next) =
 // Middleware centralizado de errores
 app.use(errorHandler);
 
+// Vercel (framework Express) exige exportar la app como default desde el entry point.
+export default app;
+
