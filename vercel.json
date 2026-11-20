@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "bunVersion": "1.x",
   "services": {
     "api": {
       "root": "apps/api",
@@ -8,6 +9,11 @@
     "web": {
       "root": "apps/web",
       "framework": "vite"
+    }
+  },
+  "functions": {
+    "services/api/*": {
+      "includeFiles": "package.json"
     }
   },
   "rewrites": [
