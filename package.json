@@ -27,5 +27,11 @@
     "fullcalendar"
   ],
   "author": "Equipo Senior de Producto y Arquitectura",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
 }
