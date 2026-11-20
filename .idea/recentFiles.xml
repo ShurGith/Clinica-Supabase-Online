@@ -3,6 +3,7 @@
   <component name="RecentFilesState">
     <option name="recentFileUrls">
       <list>
+        <option value="file://$PROJECT_DIR$/README.md" />
         <option value="file://$PROJECT_DIR$/.env.example" />
         <option value="file://$PROJECT_DIR$/.env" />
         <option value="file://$PROJECT_DIR$/.gitignore" />
@@ -11,7 +12,6 @@
         <option value="file://$PROJECT_DIR$/apps/mobile/app.json" />
         <option value="file://$PROJECT_DIR$/.dockerignore" />
         <option value="file://$PROJECT_DIR$/.env.old" />
-        <option value="file://$PROJECT_DIR$/README.md" />
       </list>
     </option>
   </component>

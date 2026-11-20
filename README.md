@@ -7,14 +7,18 @@
 [![Wawp](https://img.shields.io/badge/WhatsApp-Wawp%20API-25d366.svg)](https://wawp.net/en)
 [![Strict Scope](https://img.shields.io/badge/Economía-Cero%20Pagos-red.svg)](#-alcance-excluido-garantía-estricta)
 
-Sistema profesional, seguro y escalable diseñado para la gestión integral de citas odontológicas, expedientes clínicos y comunicación automatizada por WhatsApp para la **Clínica Dental Eugenia** (Madrid).
+Sistema profesional, seguro y escalable diseñado para la gestión integral de citas odontológicas, expedientes clínicos y
+comunicación automatizada por WhatsApp para la **Clínica Dental Eugenia** (Madrid).
 
 ---
 
-## 🚫 ALCANCE EXCLUIDO (GARANTÍA ESTRICTA)
+## 🚫 ALCANCE EXCLUIDO (GARANTÍA ESTRICTA) ---
 
-> **AVISO DE ARQUITECTURA**: Por requerimiento explícito del proyecto, la aplicación **NO INCLUYE** pasarelas de pago (Stripe, Redsys, PayPal), prepagos, cobros, suscripciones, facturas, presupuestos económicos, precios, tarifas, importes, descuentos, cupones, carritos, pedidos ni reembolsos.
-> El sistema está enfocado exclusivamente en la **excelencia médica, captación de pacientes, agenda inteligente con FullCalendar, reducción del absentismo con WhatsApp (Wawp) y cumplimiento RGPD**.
+> **AVISO DE ARQUITECTURA**: Por requerimiento explícito del proyecto, la aplicación **NO INCLUYE** pasarelas de pago
+> (Stripe, Redsys, PayPal), prepagos, cobros, suscripciones, facturas, presupuestos económicos, precios, tarifas,
+> importes, descuentos, cupones, carritos, pedidos ni reembolsos.
+> El sistema está enfocado exclusivamente en la **excelencia médica, captación de pacientes, agenda inteligente con
+> FullCalendar, reducción del absentismo con WhatsApp (Wawp) y cumplimiento RGPD**.
 
 ---
 
@@ -46,11 +50,14 @@ Sistema profesional, seguro y escalable diseñado para la gestión integral de c
 ## 🚀 Inicio Rápido en Local
 
 ### 1. Requisitos Previos
+
 - **Node.js** v20+ o v22+ y **npm**
 - **Docker** activo (para el contenedor Supabase PostgreSQL)
 
 ### 2. Base de Datos Supabase (PostgreSQL 17)
+
 Si estás usando el entorno Supabase Docker local incluido:
+
 ```bash
 # Iniciar servicios de base de datos
 docker compose up -d
@@ -61,11 +68,13 @@ docker exec -i supabase-db psql -U supabase_admin -d postgres < supabase/migrati
 ```
 
 ### 3. Compilación del Paquete Compartido
+
 ```bash
 npm run build:shared
 ```
 
 ### 4. Iniciar el Backend API (`apps/api`)
+
 ```bash
 cd apps/api
 npm run build
@@ -75,7 +84,9 @@ npm start
 ```
 
 ### 5. Iniciar la Aplicación Web (`apps/web`)
+
 En una nueva terminal:
+
 ```bash
 cd apps/web
 npm run dev
@@ -87,18 +98,25 @@ npm run dev
 ## 🖥️ Módulos de la Aplicación
 
 ### 🌐 Parte 1 — Web Pública de la Clínica
-- **Hero & Propuesta de Valor**: *"Cuidado dental integral para toda la familia"*, botones CTA a Reserva, WhatsApp y Teléfono.
-- **Tratamientos (8 Especialidades)**: Limpieza y Profilaxis, Empastes y Reconstrucción, Ortodoncia Invisible, Implantes y Cirugía, Endodoncia, Odontopediatría, Estética Dental y Urgencias. *Duraciones clínicas estimadas y beneficios (estrictamente sin precios).*
+
+- **Hero & Propuesta de Valor**: *"Cuidado dental integral para toda la familia"*, botones CTA a Reserva, WhatsApp y
+  Teléfono.
+- **Tratamientos (8 Especialidades)**: Limpieza y Profilaxis, Empastes y Reconstrucción, Ortodoncia Invisible, Implantes
+  y Cirugía, Endodoncia, Odontopediatría, Estética Dental y Urgencias. *Duraciones clínicas estimadas y beneficios (
+  estrictamente sin precios).*
 - **Equipo Facultativo**: Fichas de odontólogos colegiados, especialidades e idiomas.
-- **Horarios Públicos Dinámicos**: Obtenidos en tiempo real del endpoint de la clínica (`/api/v1/schedules/public`) con días de apertura, pausas y festivos próximos.
+- **Horarios Públicos Dinámicos**: Obtenidos en tiempo real del endpoint de la clínica (`/api/v1/schedules/public`) con
+  días de apertura, pausas y festivos próximos.
 - **Reserva de Cita en 4 Pasos**:
   1. Elección de servicio.
   2. Elección de especialista y fecha con cálculo de disponibilidad médica en tiempo real.
   3. Datos de contacto y aceptación de políticas RGPD.
   4. Confirmación instantánea y envío de WhatsApp mediante Wawp.
-- **Testimonios, Preguntas Frecuentes y Contacto**: Mapa en Calle Mayor 45 (Madrid), horarios de guardia y botón flotante de WhatsApp.
+- **Testimonios, Preguntas Frecuentes y Contacto**: Mapa en Calle Mayor 45 (Madrid), horarios de guardia y botón
+  flotante de WhatsApp.
 
 ### 📅 Parte 2 — Panel CRM & Agenda Médica
+
 - **Dashboard Operativo**: Citas de hoy, ocupación de sillones dentales, pacientes en sala de espera y alertas clínicas.
 - **Agenda Interactiva FullCalendar (Sección 4.1)**:
   - Vistas: Día, Semana, Mes, Lista y Recursos/Profesionales.
@@ -106,18 +124,24 @@ npm run dev
   - Arrastrar y soltar (`eventDrop`) con validación y revert si hay solapamiento.
   - Redimensionamiento de duración (`eventResize`).
   - Creación rápida de cita con clic en hueco libre (`dateClick`).
-  - Modal de detalle: Confirmar, Marcar en Sala de Espera, Completar, Cancelar con motivo y botón directo "Enviar WhatsApp con Wawp".
-- **Gestión de Pacientes**: CRUD completo, búsqueda avanzada, historial médico (alergias, patologías, medicación), consentimientos y botón de **Anonimización por derecho al olvido (RGPD)**.
-- **Gestión de Horarios y Bloqueos (Sección 4.2)**: Configuración de horarios de apertura, descansos y bloqueos de agenda con justificación.
+  - Modal de detalle: Confirmar, Marcar en Sala de Espera, Completar, Cancelar con motivo y botón directo "Enviar
+    WhatsApp con Wawp".
+- **Gestión de Pacientes**: CRUD completo, búsqueda avanzada, historial médico (alergias, patologías, medicación),
+  consentimientos y botón de **Anonimización por derecho al olvido (RGPD)**.
+- **Gestión de Horarios y Bloqueos (Sección 4.2)**: Configuración de horarios de apertura, descansos y bloqueos de
+  agenda con justificación.
 - **Bandeja de Conversaciones WhatsApp (Wawp)**:
   - Estilo WhatsApp Web con listado de chats e historial completo.
   - Envío manual de respuestas y plantillas predefinidas con variables (`{{nombre}}`, `{{fecha}}`, `{{hora}}`, etc.).
   - Simulador local de mensajes entrantes para probar webhooks y auto-confirmaciones sin consumir saldo.
-- **Configuración**: Identidad visual (colores, logo, textos), reglas de reserva (antelación mínima, buffer de limpieza) y credenciales de Wawp.
+- **Configuración**: Identidad visual (colores, logo, textos), reglas de reserva (antelación mínima, buffer de limpieza)
+  y credenciales de Wawp.
 
 ### 📱 Parte 3 — App Móvil (Expo / React Native)
+
 - Ubicada en `apps/mobile/`.
-- Permite a los pacientes consultar próximas citas, reservar en 1 minuto, solicitar cancelaciones y chatear por WhatsApp.
+- Permite a los pacientes consultar próximas citas, reservar en 1 minuto, solicitar cancelaciones y chatear por
+  WhatsApp.
 - Modo médico para consulta de la agenda diaria del odontólogo.
 
 ---
@@ -125,6 +149,7 @@ npm run dev
 ## 🧪 Pruebas Automatizadas
 
 El backend incluye tests unitarios para validación de esquemas Zod, motor de disponibilidad y simulación Wawp:
+
 ```bash
 node --test apps/api/tests/api.test.js
 ```
