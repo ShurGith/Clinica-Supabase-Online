@@ -87,6 +87,10 @@ export const config = {
   },
 
   clinicId: process.env.DEFAULT_CLINIC_ID || 'e1111111-1111-1111-1111-111111111111',
+
+  // Bloqueo de producción (Vercel): con PROD_MOD_VERCEL=true no se pueden cambiar
+  // los ajustes de Configuración ni enviar ningún WhatsApp.
+  prodModVercel: /^(true|1|yes|si|sí)$/i.test((process.env.PROD_MOD_VERCEL || '').trim()),
 };
 
 // Supabase Admin Client (Bypasses RLS for backend background jobs and triggers)

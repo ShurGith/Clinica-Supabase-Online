@@ -6,7 +6,7 @@ const field =
   'w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500';
 
 /** Usuario y contraseña del panel guardados en BD. El superusuario de .env (SUPER_USER / SUPER_PASS) sigue siendo válido. */
-export const CrmAccessSettings: React.FC<{ onSaved?: (message: string) => void }> = ({ onSaved }) => {
+export const CrmAccessSettings: React.FC<{ onSaved?: (message: string) => void; disabled?: boolean }> = ({ onSaved, disabled }) => {
   const [session, setSession] = useState<CrmSessionInfo | null>(null);
   const [current, setCurrent] = useState<{ username: string | null; updated_at: string | null; env_superuser_configured: boolean } | null>(null);
   const [loadError, setLoadError] = useState('');
@@ -115,7 +115,7 @@ export const CrmAccessSettings: React.FC<{ onSaved?: (message: string) => void }
             <div className="sm:col-span-2 flex justify-end">
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || disabled}
                 className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm"
               >
                 <KeyRound className="w-4 h-4" /> {saving ? 'Guardando…' : current.username ? 'Cambiar acceso' : 'Crear acceso'}

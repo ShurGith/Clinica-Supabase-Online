@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { config } from '../../config/index.js';
+import { blockSettingsChanges } from '../../middleware/prodLock.js';
 import {
   SESSION_COOKIE, SESSION_TTL_SECONDS, CrmSession, authenticate, clearLoginFailures, envSuperUserConfigured,
   getDbCredentials, issueSessionToken, loginBlockedFor, recordLoginFailure, saveDbCredentials, verifyPassword, verifySessionToken,
@@ -143,7 +144,7 @@ const credentialsSchema = z.object({
 });
 
 // PUT /api/v1/auth/credentials - Crear o cambiar el usuario y la contraseña guardados en BD
-router.put('/credentials', async (req: CrmRequest, res: Response, next: NextFunction) => {
+router.put('/credentials', blockSettingsChanges, async (req: CrmRequest, res: Response, next: NextFunction) => {
   try {
     const parsed = credentialsSchema.safeParse(req.body);
     if (!parsed.success) {

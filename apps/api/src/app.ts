@@ -16,6 +16,7 @@ import { settingsRouter } from './modules/settings/settings.controller.js';
 import { remindersService } from './modules/reminders/reminders.service.js';
 import { authRouter, requireCrmSession } from './modules/auth/auth.controller.js';
 import { clinicRouter } from './modules/clinic/clinic.controller.js';
+import { blockWhatsAppSending } from './middleware/prodLock.js';
 
 export const app = express();
 
@@ -53,7 +54,7 @@ app.use('/api/v1/settings', settingsRouter);
 app.use('/api/v1/clinic', clinicRouter);
 
 // Endpoint manual o cron para disparar recordatorios automáticos
-app.post('/api/v1/reminders/run', async (req, res, next) => {
+app.post('/api/v1/reminders/run', blockWhatsAppSending, async (req, res, next) => {
   try {
     const results = await remindersService.runDueReminders();
     res.json({ success: true, results });

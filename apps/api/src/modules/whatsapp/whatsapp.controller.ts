@@ -3,6 +3,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { supabaseAdmin, config } from '../../config/index.js';
 import { wawpService } from '../wawp/wawp.service.js';
 import { wawpSendMessageSchema } from '@clinica-eugenia/shared';
+import { blockWhatsAppSending } from '../../middleware/prodLock.js';
 
 const router = Router();
 const wawpWebhookRouter = Router();
@@ -110,7 +111,7 @@ router.delete('/conversations/:id', async (req: Request, res: Response, next: Ne
 });
 
 // POST /api/v1/whatsapp/messages/send - Enviar mensaje manual o plantilla a través de Wawp
-router.post('/messages/send', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/messages/send', blockWhatsAppSending, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validated = wawpSendMessageSchema.parse(req.body);
     if (validated.content.length > 4096) {
@@ -135,6 +136,9 @@ router.post('/messages/send', async (req: Request, res: Response, next: NextFunc
 
     if (result.status === 'blocked_dev') {
       return res.status(403).json({ success: false, error: 'BLOCKED_BY_DEV_MODE', message: result.error });
+    }
+    if (result.status === 'blocked_prod') {
+      return res.status(403).json({ success: false, error: 'BLOCKED_BY_PROD_LOCK', message: result.error });
     }
     if (!result.success) {
       return res.status(502).json({ success: false, error: 'WAWP_SEND_FAILED', message: result.error || 'Wawp no pudo aceptar el mensaje.' });

@@ -5,6 +5,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { config, supabaseAdmin } from '../../config/index.js';
+import { blockSettingsChanges } from '../../middleware/prodLock.js';
 
 const router = Router();
 
@@ -52,7 +53,7 @@ const clinicSchema = z.object({
     .optional().transform(v => v || null),
 });
 
-router.put('/', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/', blockSettingsChanges, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = clinicSchema.safeParse(req.body);
     if (!parsed.success) {

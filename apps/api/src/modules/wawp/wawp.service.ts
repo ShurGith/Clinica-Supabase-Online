@@ -161,6 +161,17 @@ export class WawpService implements WhatsAppProvider {
    * Envía un mensaje de texto plano o con contenido dinámico a través de Wawp
    */
   async sendMessage(options: SendMessageOptions): Promise<WawpResponse> {
+    // 0. Bloqueo de producción (Vercel): con PROD_MOD_VERCEL=true no sale ningún
+    // WhatsApp por ningún camino (manual, citas, recordatorios ni auto-respuestas).
+    if (config.prodModVercel) {
+      console.warn(JSON.stringify({ event: 'whatsapp.send', provider: 'wawp', status: 'blocked_prod_lock', templateCode: options.templateCode }));
+      return {
+        success: false,
+        status: 'blocked_prod',
+        error: 'El envío de WhatsApp está deshabilitado en este despliegue (PROD_MOD_VERCEL=true).',
+      };
+    }
+
     let cleanPhone: string;
     try {
       cleanPhone = normalizeWawpPhone(options.phoneNumber);

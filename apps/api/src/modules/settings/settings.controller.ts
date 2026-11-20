@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { supabaseAdmin, config } from '../../config/index.js';
+import { blockSettingsChanges } from '../../middleware/prodLock.js';
 import { updateSettingsSchema } from '@clinica-eugenia/shared';
 
 const router = Router();
@@ -20,6 +21,8 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
       ...settings,
       wawp_api_token: settings.wawp_api_token ? '••••••••••••••••' : '',
       wawp_webhook_secret: settings.wawp_webhook_secret ? '••••••••••••••••' : '',
+      // La web lo usa para deshabilitar los botones de guardar cuando el despliegue está bloqueado.
+      prod_mod_vercel: config.prodModVercel,
     };
 
     res.json({ success: true, data: safeSettings });
@@ -46,7 +49,7 @@ router.get('/public', async (_req: Request, res: Response, next: NextFunction) =
 });
 
 // PUT /api/v1/settings - Actualizar configuración de la clínica
-router.put('/', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/', blockSettingsChanges, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validated = updateSettingsSchema.parse(req.body);
 

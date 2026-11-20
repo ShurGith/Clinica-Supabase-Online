@@ -17,6 +17,8 @@ export const CrmSettings: React.FC = () => {
   const [settings, setSettings] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  // Despliegue bloqueado (PROD_MOD_VERCEL=true): no se pueden guardar ajustes ni enviar WhatsApps.
+  const [prodLocked, setProdLocked] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const [wawpStatus, setWawpStatus] = useState<{ mode: 'api' | 'sandbox'; connected: boolean | null; status: string; phoneSuffix?: string } | null>(null);
   const [checkingWawp, setCheckingWawp] = useState(false);
@@ -62,6 +64,7 @@ export const CrmSettings: React.FC = () => {
     api.getSettings()
       .then(data => {
         setSettings(data);
+        setProdLocked(!!data.prod_mod_vercel);
         setHeroTitle(data.hero_title || '');
         setHeroSubtitle(data.hero_subtitle || '');
         setPrimaryColor(data.primary_color || '#0d9488');
@@ -155,7 +158,7 @@ export const CrmSettings: React.FC = () => {
       key={key}
       type="submit"
       form="crm-settings-form"
-      disabled={saving}
+      disabled={saving || prodLocked}
       className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold text-xs px-6 py-3 rounded-xl transition flex items-center gap-2 shadow-md shadow-brand-600/20 shrink-0"
     >
       <Save className="w-4 h-4" />
@@ -184,6 +187,12 @@ export const CrmSettings: React.FC = () => {
         </div>
         {saveAllButton('header')}
       </div>
+
+      {prodLocked && (
+        <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-xs font-semibold text-amber-800" role="alert">
+          Despliegue bloqueado (PROD_MOD_VERCEL=true): los ajustes no se pueden cambiar y el envío de WhatsApp está deshabilitado. Para permitir cambios, pon la variable a false en el servidor y reinicia el backend.
+        </div>
+      )}
 
       <form id="crm-settings-form" onSubmit={handleSave} className="space-y-6" noValidate>
         
@@ -393,7 +402,7 @@ export const CrmSettings: React.FC = () => {
       </form>
 
       {/* Acceso al panel: formulario propio (no se guarda con «Guardar Todos los Ajustes») */}
-      <CrmAccessSettings onSaved={msg => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 4000); }} />
+      <CrmAccessSettings disabled={prodLocked} onSaved={msg => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 4000); }} />
 
     </div>
   );

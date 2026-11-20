@@ -2,6 +2,7 @@
   "name": "clinica-dental-eugenia-monorepo",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Sistema integral de gestión de citas, pacientes y WhatsApp (Wawp) para Clínica Dental Eugenia (Sin módulos de pago)",
   "workspaces": [
     "apps/*",
