@@ -13,13 +13,13 @@ import { APPOINTMENT_STATUS_COLORS, APPOINTMENT_STATUS_LABELS } from '@clinica-e
 import { useNoticeModal } from '../ui/NoticeModal.js';
 import { DayResourceView } from './DayResourceView';
 
-const readableAppointmentError = (message: string | undefined, fallback: string) =>
+const readableAppointmentError = (message: string | undefined, fallback: string, professionalName?: string) =>
   message?.includes('CONFLICT_BLOCKED_SLOT')
     ? 'Ese horario está bloqueado o corresponde a un festivo. Elige otra fecha u hora.'
     : message?.includes('CONFLICT_SCHEDULE')
       ? 'Ese horario queda fuera de la jornada del profesional o coincide con una ausencia suya. Revisa sus horarios y ausencias en Horarios → Profesionales.'
       : message?.includes('CONFLICT_PROFESSIONAL')
-        ? 'El profesional ya tiene otra cita en ese horario.'
+        ? `${professionalName || 'El profesional'} ya tiene ocupada esta hora.`
         : message?.includes('CONFLICT_OPERATORY')
           ? 'El gabinete ya está ocupado en ese horario.'
           : message || fallback;
@@ -64,6 +64,10 @@ export const CrmCalendar: React.FC = () => {
   const [patients, setPatients] = useState<any[]>([]);
   const [clinicWeek, setClinicWeek] = useState<any[] | null>(null);
   const [profSchedules, setProfSchedules] = useState<any[]>([]);
+  const professionalNameFor = (professionalId?: string) => {
+    const professional = professionals.find((item: any) => item.id === professionalId);
+    return professional ? `${professional.first_name} ${professional.last_name}`.trim() : undefined;
+  };
 
   // Filtros
   const [filterProf, setFilterProf] = useState<string[]>([]);
@@ -284,7 +288,10 @@ export const CrmCalendar: React.FC = () => {
       await loadData();
     } catch (err: any) {
       revert();
-      notice.notify(readableAppointmentError(err.message, 'No se puede mover la cita: hueco ocupado o fuera de horario.') + '\nLa cita se ha dejado donde estaba.', 'error', 'Cita rechazada');
+      const professionalName = newProf
+        ? `${newProf.first_name} ${newProf.last_name}`.trim()
+        : appt.professionalName || professionalNameFor(appt.professional_id);
+      notice.notify(readableAppointmentError(err.message, 'No se puede mover la cita: hueco ocupado o fuera de horario.', professionalName) + '\nLa cita se ha dejado donde estaba.', 'error', 'Cita rechazada');
     }
   };
 
@@ -305,7 +312,11 @@ export const CrmCalendar: React.FC = () => {
       showToast(`Duración actualizada a ${durationMinutes} minutos`);
       loadData();
     } catch (err: any) {
-      notice.notify(readableAppointmentError(err.message, 'No se puede cambiar la duración: entra en conflicto con otra cita.'), 'error', 'Cambio rechazado');
+      notice.notify(readableAppointmentError(
+        err.message,
+        'No se puede cambiar la duración: entra en conflicto con otra cita.',
+        appt.professionalName || professionalNameFor(appt.professional_id),
+      ), 'error', 'Cambio rechazado');
     }
   };
 
@@ -327,7 +338,12 @@ export const CrmCalendar: React.FC = () => {
       loadData();
     } catch (err: any) {
       info.revert();
-      showToast(readableAppointmentError(err.message, 'No se puede cambiar la duración: entra en conflicto con otra cita.'), 'err');
+      const appt = info.event.extendedProps;
+      showToast(readableAppointmentError(
+        err.message,
+        'No se puede cambiar la duración: entra en conflicto con otra cita.',
+        appt.professionalName || professionalNameFor(appt.professional_id),
+      ), 'err');
     }
   };
 
@@ -514,6 +530,37 @@ export const CrmCalendar: React.FC = () => {
 
   // Enviar confirmación por WhatsApp
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
+  const [operatories, setOperatories] = useState<any[]>([]);
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  useEffect(() => {
+    api.getOperatories().then(setOperatories).catch(() => setOperatories([]));
+  }, []);
+
+  // Guarda al instante el cambio de un selector; si es de odontólogo, propone su gabinete por defecto
+  const handleDetailChange = async (field: 'service_id' | 'professional_id' | 'operatory_id', value: string) => {
+    const appt = selectedAppointment;
+    if (!appt || !value || savingEdit) return;
+    const changes: { service_id?: string; professional_id?: string; operatory_id?: string } = { [field]: value };
+    if (field === 'professional_id') {
+      const def = professionals.find((p: any) => p.id === value)?.default_operatory_id;
+      if (def) changes.operatory_id = def;
+    }
+    setSavingEdit(true);
+    try {
+      await api.updateAppointmentDetails(appt.id, changes);
+      showToast('Cita actualizada');
+      await loadData();
+    } catch (err: any) {
+      notice.notify(readableAppointmentError(
+        err.message,
+        'No se pueden aplicar los cambios: conflicto con otra cita.',
+        professionalNameFor(changes.professional_id || appt.professional_id),
+      ), 'error', 'Cambio rechazado');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
   const handleSendAppointmentWhatsApp = async () => {
     const appt = selectedAppointment;
     const phone = appt?.patient?.phone;
@@ -1055,35 +1102,25 @@ export const CrmCalendar: React.FC = () => {
 
                 {/* Campos de Detalle */}
                 <div className="space-y-3 text-xs">
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
-                      Tratamiento
-                    </span>
-                    <span className="font-bold text-slate-800 text-xs">
-                      {selectedAppointment.service?.name || 'Tratamiento general'}
-                    </span>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
-                      Odontólogo
-                    </span>
-                    <div className="flex items-center gap-1.5 font-semibold text-slate-800">
-                      <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                      <span>{selectedAppointment.professional?.first_name} {selectedAppointment.professional?.last_name}</span>
+                  {([
+                    ['Tratamiento', 'detail-service', selectedAppointment.service_id || '', 'service_id', services.map((s: any) => ({ id: s.id, label: s.name }))],
+                    ['Odontólogo', 'detail-prof', selectedAppointment.professional_id || '', 'professional_id', professionals.map((p: any) => ({ id: p.id, label: `${p.first_name} ${p.last_name}` }))],
+                    ['Gabinete', 'detail-operatory', selectedAppointment.operatory_id || selectedAppointment.operatory?.id || '', 'operatory_id', operatories.map((o: any) => ({ id: o.id, label: o.name }))],
+                  ] as [string, string, string, 'service_id' | 'professional_id' | 'operatory_id', { id: string; label: string }[]][]).map(([label, id, value, field, options]) => (
+                    <div key={id}>
+                      <label htmlFor={id} className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">{label}</label>
+                      <select
+                        id={id}
+                        value={value}
+                        disabled={savingEdit}
+                        onChange={e => handleDetailChange(field, e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+                      >
+                        {!options.some(o => o.id === value) && <option value={value}>—</option>}
+                        {options.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                      </select>
                     </div>
-                  </div>
-
-                  {selectedAppointment.operatory?.name && (
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
-                        Gabinete
-                      </span>
-                      <span className="font-medium text-slate-700">
-                        {selectedAppointment.operatory.name}
-                      </span>
-                    </div>
-                  )}
+                  ))}
 
                   {selectedAppointment.patient_notes && (
                     <div>
@@ -1265,7 +1302,15 @@ const CreateAppointmentModal: React.FC<any> = ({
       });
       onSuccess();
     } catch (err: any) {
-      notice.notify(readableAppointmentError(err.message, 'Error creando la cita. Puede existir solapamiento de horario.'));
+      const professional = professionals.find((item: any) => item.id === profId);
+      const professionalName = professional
+        ? `${professional.first_name} ${professional.last_name}`.trim()
+        : undefined;
+      notice.notify(readableAppointmentError(
+        err.message,
+        'Error creando la cita. Puede existir solapamiento de horario.',
+        professionalName,
+      ));
     } finally {
       setLoading(false);
     }

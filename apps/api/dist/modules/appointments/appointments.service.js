@@ -216,6 +216,38 @@ export class AppointmentsService {
         return { ...updated, whatsapp };
     }
     /**
+     * Cambia tratamiento, odontólogo y/o gabinete sin tocar fecha ni horas.
+     * El trigger check_appointment_overlap valida los conflictos (CONFLICT_*).
+     */
+    async updateAppointmentDetails(id, params) {
+        const payload = {};
+        if (params.serviceId)
+            payload.service_id = params.serviceId;
+        if (params.professionalId)
+            payload.professional_id = params.professionalId;
+        if (params.operatoryId)
+            payload.operatory_id = params.operatoryId;
+        if (!Object.keys(payload).length) {
+            throw Object.assign(new Error('No hay cambios que guardar.'), { status: 400, code: 'VALIDATION_ERROR' });
+        }
+        const { data: updated, error } = await supabaseAdmin
+            .from('appointments')
+            .update(payload)
+            .eq('id', id)
+            .eq('clinic_id', config.clinicId)
+            .select(`
+        *,
+        patient:patients (first_name, last_name, phone),
+        professional:professionals (first_name, last_name, color, default_operatory_id),
+        service:services (name),
+        operatory:operatories (id, name, color)
+      `)
+            .single();
+        if (error)
+            throw error;
+        return updated;
+    }
+    /**
      * Redimensiona una cita (cambio de duración en FullCalendar eventResize)
      */
     async resizeAppointment(params) {

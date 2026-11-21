@@ -22,6 +22,23 @@ router.get('/', async (req, res, next) => {
     }
 });
 // GET /api/v1/appointments/:id - Detalle de cita
+// GET /api/v1/appointments/operatories - Gabinetes activos
+router.get('/operatories', async (_req, res, next) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('operatories')
+            .select('id, name, color')
+            .eq('clinic_id', config.clinicId)
+            .eq('is_active', true)
+            .order('name', { ascending: true });
+        if (error)
+            throw error;
+        res.json({ success: true, data: data || [] });
+    }
+    catch (err) {
+        next(err);
+    }
+});
 router.get('/:id', async (req, res, next) => {
     try {
         const appointment = await appointmentsService.getAppointmentById(req.params.id);
@@ -163,6 +180,27 @@ router.patch('/resize', async (req, res, next) => {
             startTime: validated.start_time,
             endTime: validated.end_time,
             durationMinutes: validated.duration_minutes,
+        });
+        res.json({ success: true, data: updated });
+    }
+    catch (err) {
+        next(err);
+    }
+});
+// PATCH /api/v1/appointments/:id/details - Cambiar tratamiento, odontólogo y/o gabinete
+router.patch('/:id/details', async (req, res, next) => {
+    try {
+        const isUuid = (v) => typeof v === 'string' && /^[0-9a-f-]{36}$/i.test(v);
+        const { service_id, professional_id, operatory_id } = req.body || {};
+        for (const v of [service_id, professional_id, operatory_id]) {
+            if (v !== undefined && !isUuid(v)) {
+                return res.status(400).json({ success: false, error: 'VALIDATION_ERROR', message: 'Identificador no válido.' });
+            }
+        }
+        const updated = await appointmentsService.updateAppointmentDetails(String(req.params.id), {
+            serviceId: service_id,
+            professionalId: professional_id,
+            operatoryId: operatory_id,
         });
         res.json({ success: true, data: updated });
     }

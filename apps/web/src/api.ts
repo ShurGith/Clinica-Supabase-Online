@@ -100,6 +100,12 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
+  getOperatories: () => fetchJson<any[]>('/appointments/operatories'),
+  updateAppointmentDetails: (id: string, data: { service_id?: string; professional_id?: string; operatory_id?: string }) =>
+    fetchJson<any>(`/appointments/${id}/details`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
   resizeAppointment: (data: { appointment_id: string; start_time: string; end_time: string; duration_minutes: number }) =>
     fetchJson<any>('/appointments/resize', {
       method: 'PATCH',
