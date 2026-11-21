@@ -3,10 +3,14 @@
   <component name="RecentFilesState">
     <option name="recentFileUrls">
       <list>
-        <option value="file://$PROJECT_DIR$/vercel.json" />
-        <option value="agent-thread-view://4/github-copilot/78525c29/ega6slepclzcy29th28iundvt" />
-        <option value="file://$PROJECT_DIR$/.env" />
+        <option value="file://$PROJECT_DIR$/apps/web/vite.config.ts" />
+        <option value="file://$PROJECT_DIR$/apps/web/tsconfig.json" />
+        <option value="file://$PROJECT_DIR$/apps/web/src/vite-env.d.ts" />
+        <option value="file://$PROJECT_DIR$/skills/system/run-workflow/SKILL.md" />
         <option value="mock:///What's New in PhpStorm" />
+        <option value="file://$PROJECT_DIR$/.env" />
+        <option value="agent-thread-view://4/github-copilot/78525c29/ega6slepclzcy29th28iundvt" />
+        <option value="file://$PROJECT_DIR$/vercel.json" />
         <option value="file://$PROJECT_DIR$/start-cloud.sh" />
         <option value="file://$PROJECT_DIR$/package.json" />
         <option value="file://$PROJECT_DIR$/INSTRUCCIONES.md" />
