@@ -1,5 +1,15 @@
 // Cliente API para comunicarse con el Backend modular de Clínica Dental Eugenia
-const API_BASE = '/api/v1';
+// La URL de la API se puede fijar con VITE_API_BASE_URL (debe incluir /api/v1),
+// por ejemplo en Render. Sin ella se usa la ruta relativa, que solo funciona
+// cuando la API vive en el mismo origen (Vercel o el proxy de Vite en local).
+// Ojo: Vite incrusta esta variable al compilar, así que cambiarla exige
+// reconstruir y redesplegar la web.
+function resolveApiBase(): string {
+  const fromEnv = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim().replace(/\/+$/, '');
+  if (!fromEnv) return '/api/v1';
+  return fromEnv.endsWith('/api/v1') ? fromEnv : `${fromEnv}/api/v1`;
+}
+const API_BASE = resolveApiBase(); 
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${url}`, {
