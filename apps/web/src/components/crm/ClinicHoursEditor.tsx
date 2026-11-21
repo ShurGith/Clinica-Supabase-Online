@@ -73,13 +73,15 @@ interface Props {
   onChange: (week: ClinicDayHours[]) => void;
   /** Contenido al pie de la tarjeta, alineado a la derecha (p. ej. el botón de guardar). */
   footer?: React.ReactNode;
+  /** Campos adicionales del horario (p. ej. antelación mínima), entre los días y el pie. */
+  extra?: React.ReactNode;
 }
 
 const timeInput =
   'w-[5.5rem] p-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 tabular-nums ' +
   'focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:bg-slate-50 disabled:text-slate-400';
 
-export const ClinicHoursEditor: React.FC<Props> = ({ week, errors, onChange, footer }) => {
+export const ClinicHoursEditor: React.FC<Props> = ({ week, errors, onChange, footer, extra }) => {
   const update = (day: number, patch: Partial<ClinicDayHours>) =>
     onChange(week.map(d => (d.day_of_week === day ? { ...d, ...patch } : d)));
 
@@ -175,6 +177,8 @@ export const ClinicHoursEditor: React.FC<Props> = ({ week, errors, onChange, foo
           );
         })}
       </div>
+
+      {extra && <div className="pt-4 border-t border-slate-100">{extra}</div>}
 
       {footer && <div className="flex justify-end pt-4 border-t border-slate-100">{footer}</div>}
     </div>

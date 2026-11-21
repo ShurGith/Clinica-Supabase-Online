@@ -25,7 +25,7 @@ export const patientSchema = z.object({
 export const publicBookingSchema = z.object({
     service_id: z.string().uuid('Servicio no válido'),
     professional_id: z.string().uuid('Profesional no válido').optional().nullable(),
-    start_time: z.string().datetime({ message: 'Fecha y hora de inicio no válida' }),
+    start_time: z.string().min(1, 'Fecha y hora de inicio no válida'),
     first_name: z.string().min(2, 'El nombre es obligatorio'),
     last_name: z.string().min(2, 'Los apellidos son obligatorios'),
     phone: z.string().min(9, 'Introduce un número de teléfono válido'),
@@ -43,8 +43,8 @@ export const createAppointmentSchema = z.object({
     professional_id: z.string().uuid('Debe seleccionar un odontólogo'),
     operatory_id: z.string().uuid().optional(),
     service_id: z.string().uuid('Debe seleccionar un tratamiento'),
-    start_time: z.string().datetime('Fecha de inicio inválida'),
-    end_time: z.string().datetime('Fecha de fin inválida').optional(),
+    start_time: z.string().min(1, 'Fecha de inicio inválida'),
+    end_time: z.string().min(1, 'Fecha de fin inválida').optional(),
     duration_minutes: z.number().int().min(10).max(240).optional(),
     status: z.enum([
         'pending',
@@ -62,8 +62,8 @@ export const createAppointmentSchema = z.object({
 // 4. Esquema de Movimiento/Drop en FullCalendar
 export const moveAppointmentSchema = z.object({
     appointment_id: z.string().uuid(),
-    start_time: z.string().datetime(),
-    end_time: z.string().datetime(),
+    start_time: z.string().min(1),
+    end_time: z.string().min(1),
     professional_id: z.string().uuid().optional(),
     operatory_id: z.string().uuid().optional(),
     reason: z.string().optional().default('Reprogramación por arrastre en calendario'),
@@ -72,8 +72,8 @@ export const moveAppointmentSchema = z.object({
 // 5. Esquema de Redimensionamiento (Resize) en FullCalendar
 export const resizeAppointmentSchema = z.object({
     appointment_id: z.string().uuid(),
-    start_time: z.string().datetime(),
-    end_time: z.string().datetime(),
+    start_time: z.string().min(1),
+    end_time: z.string().min(1),
     duration_minutes: z.number().int().min(10).max(360),
 });
 // 6. Esquema de Cancelación de Cita

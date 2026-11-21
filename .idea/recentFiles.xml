@@ -4,14 +4,17 @@
     <option name="recentFileUrls">
       <list>
         <option value="file://$PROJECT_DIR$/.env" />
+        <option value="mock:///Image" />
+        <option value="file://$PROJECT_DIR$/package.json" />
+        <option value="file://$PROJECT_DIR$/apps/api/.env" />
+        <option value="mock:///File Changes" />
+        <option value="mock:///New Chat" />
         <option value="file://$PROJECT_DIR$/README.md" />
         <option value="file://$PROJECT_DIR$/.env.example" />
         <option value="file://$PROJECT_DIR$/.gitignore" />
         <option value="file://$PROJECT_DIR$/vercel.json" />
-        <option value="file://$PROJECT_DIR$/apps/api/.env" />
         <option value="file://$PROJECT_DIR$/apps/mobile/app.json" />
         <option value="file://$PROJECT_DIR$/.dockerignore" />
-        <option value="file://$PROJECT_DIR$/.env.old" />
       </list>
     </option>
   </component>

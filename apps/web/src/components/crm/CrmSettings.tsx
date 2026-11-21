@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api.js';
 import {
   Settings, MessageSquare, Shield, Clock, Palette,
-  Save, CheckCircle2, AlertCircle, RefreshCw
+  Save, CheckCircle2, AlertCircle, RefreshCw, ChevronDown, GripVertical
 } from 'lucide-react';
 import { useNoticeModal } from '../ui/NoticeModal.js';
 import { ClinicHoursEditor, ClinicDayHours, toApiWeek, toEditorWeek, validateWeek } from './ClinicHoursEditor.js';
@@ -10,7 +10,49 @@ import { loadPublicSchedule } from '../../clinicHours.js';
 import { CrmAccessSettings } from './CrmAccessSettings.js';
 import { ClinicContactEditor, ClinicContactForm, emptyContact, toContactForm, validateContact } from './ClinicContactEditor.js';
 import { loadClinicInfo } from '../../clinicInfo.js';
-import { applyBrandColor, loadSiteIdentity, whiteContrast } from '../../brandTheme.js';
+import { applyBrandColor, loadSiteIdentity } from '../../brandTheme.js';
+
+
+// Tarjeta de Configuración: se contrae (queda solo la cabecera) y se recoloca arrastrando el asa
+export const SettingsSection: React.FC<{
+  id: string; collapsed: boolean; onToggle: () => void; onMove?: (from: string, to: string) => void; children: React.ReactNode;
+}> = ({ id, collapsed, onToggle, onMove, children }) => {
+  const [over, setOver] = useState(false);
+  return (
+    <div
+      className={`relative rounded-3xl transition [&>div:nth-child(2)>*:first-child]:pr-20 ${over ? 'ring-2 ring-brand-500 ring-offset-2' : ''} ${collapsed ? '[&>div:nth-child(2)>*:not(:first-child)]:hidden' : ''}`}
+      onDragOver={e => { if (e.dataTransfer.types.includes('text/settings-section')) { e.preventDefault(); setOver(true); } }}
+      onDragLeave={() => setOver(false)}
+      onDrop={e => {
+        setOver(false);
+        const from = e.dataTransfer.getData('text/settings-section');
+        if (from && onMove) { e.preventDefault(); onMove(from, id); }
+      }}
+    >
+      <div className="absolute right-4 top-4 z-10 flex items-center gap-1">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? 'Expandir sección' : 'Contraer sección'}
+          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+        >
+          <ChevronDown className={`h-4 w-4 transition-transform ${collapsed ? '-rotate-90' : ''}`} />
+        </button>
+        {onMove && <span
+          draggable
+          onDragStart={e => { e.dataTransfer.setData('text/settings-section', id); e.dataTransfer.effectAllowed = 'move'; }}
+          title="Arrastra para reordenar"
+          aria-label="Arrastrar para reordenar la sección"
+          className="cursor-grab rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 active:cursor-grabbing"
+        >
+          <GripVertical className="h-4 w-4" />
+        </span>}
+      </div>
+      {children}
+    </div>
+  );
+};
 
 export const CrmSettings: React.FC = () => {
   const notice = useNoticeModal();
@@ -26,7 +68,7 @@ export const CrmSettings: React.FC = () => {
   // Form Fields
   const [heroTitle, setHeroTitle] = useState('');
   const [heroSubtitle, setHeroSubtitle] = useState('');
-  const [primaryColor, setPrimaryColor] = useState('#0d9488');
+  const [primaryColor, setPrimaryColor] = useState('#0f766e');
   const [minNoticeHours, setMinNoticeHours] = useState(2);
   const [bufferMinutes, setBufferMinutes] = useState(10);
   const [rem24h, setRem24h] = useState(true);
@@ -67,7 +109,7 @@ export const CrmSettings: React.FC = () => {
         setProdLocked(!!data.prod_mod_vercel);
         setHeroTitle(data.hero_title || '');
         setHeroSubtitle(data.hero_subtitle || '');
-        setPrimaryColor(data.primary_color || '#0d9488');
+        setPrimaryColor(data.primary_color || '#0f766e');
         setMinNoticeHours(data.min_notice_hours || 2);
         setBufferMinutes(data.buffer_between_appointments_minutes || 10);
         setRem24h(!!data.reminder_24h_enabled);
@@ -97,7 +139,7 @@ export const CrmSettings: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!/^#[0-9a-fA-F]{6}$/.test(primaryColor)) {
-      notice.notify('El color principal debe tener el formato #RRGGBB, por ejemplo #0d9488.');
+      notice.notify('El color principal debe tener el formato #RRGGBB, por ejemplo #0f766e.');
       return;
     }
     if (heroTitle.trim().length < 5 || heroSubtitle.trim().length < 10) {
@@ -166,37 +208,32 @@ export const CrmSettings: React.FC = () => {
     </button>
   );
 
-  return (
-    <div className="space-y-6">
-      {notice.modal}
-      
-      {toastMsg && (
-        <div className="fixed top-4 right-4 z-50 p-4 rounded-2xl bg-emerald-600 text-white shadow-xl flex items-center gap-2 text-xs font-bold animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4" /> {toastMsg}
-        </div>
-      )}
+  const [sectionOrder, setSectionOrder] = useState<string[]>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('crm-settings-order') || '[]');
+      const base = ['identity', 'contact', 'hours', 'wawp'];
+      return Array.isArray(saved) ? [...saved.filter((x: string) => base.includes(x)), ...base.filter(x => !saved.includes(x))] : base;
+    } catch { return ['identity', 'contact', 'hours', 'wawp']; }
+  });
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem('crm-settings-collapsed') || '{}'); } catch { return {}; }
+  });
+  const toggleSection = (id: string) => setCollapsed(c => {
+    const next = { ...c, [id]: !c[id] };
+    try { localStorage.setItem('crm-settings-collapsed', JSON.stringify(next)); } catch { /* sin almacenamiento */ }
+    return next;
+  });
+  const moveSection = (from: string, to: string) => setSectionOrder(o => {
+    if (from === to) return o;
+    const next = o.filter(x => x !== from);
+    next.splice(next.indexOf(to), 0, from);
+    try { localStorage.setItem('crm-settings-order', JSON.stringify(next)); } catch { /* sin almacenamiento */ }
+    return next;
+  });
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-            Configuración General
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Identidad visual, datos de contacto, horario de apertura, reglas de reserva y pasarela Wawp.
-          </p>
-        </div>
-        {saveAllButton('header')}
-      </div>
-
-      {prodLocked && (
-        <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-xs font-semibold text-amber-800" role="alert">
-          Despliegue bloqueado (PROD_MOD_VERCEL=true): los ajustes no se pueden cambiar y el envío de WhatsApp está deshabilitado. Para permitir cambios, pon la variable a false en el servidor y reinicia el backend.
-        </div>
-      )}
-
-      <form id="crm-settings-form" onSubmit={handleSave} className="space-y-6" noValidate>
-        
-        {/* Identidad Visual & Web */}
+  const sections: Record<string, React.ReactNode> = {
+    identity: (
+      <>
         <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
           <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
             <Palette className="w-4 h-4 text-brand-600" /> Identidad Visual y Contenidos Web
@@ -220,15 +257,9 @@ export const CrmSettings: React.FC = () => {
                 />
               </div>
               {/^#[0-9a-fA-F]{6}$/.test(primaryColor) ? (
-                whiteContrast(primaryColor) < 4.5 ? (
-                  <span className="text-[11px] font-bold text-amber-700 mt-1 block" role="status">
-                    Color muy claro: el texto blanco de los botones tendrá poco contraste ({whiteContrast(primaryColor).toFixed(1)}:1, se recomienda 4,5:1 o más).
-                  </span>
-                ) : (
-                  <span className="text-[10px] text-slate-400 mt-1 block">Se aplica a botones, enlaces y acentos de toda la web y del panel.</span>
-                )
+                <span className="text-[10px] text-slate-400 mt-1 block">Se aplica a botones, enlaces y acentos de toda la web y del panel.</span>
               ) : (
-                <span className="text-[11px] font-bold text-red-600 mt-1 block" role="alert">Usa el formato #RRGGBB, p. ej. #0d9488.</span>
+                <span className="text-[11px] font-bold text-red-600 mt-1 block" role="alert">Usa el formato #RRGGBB, p. ej. #0f766e.</span>
               )}
             </div>
 
@@ -253,8 +284,10 @@ export const CrmSettings: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Datos de contacto: fuente única para teléfonos, email y dirección de la web */}
+      </>
+    ),
+    contact: (
+      <>
         {contactLoadError ? (
           <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm text-xs text-red-600 font-semibold flex items-center justify-between gap-3" role="alert">
             {contactLoadError}
@@ -272,8 +305,10 @@ export const CrmSettings: React.FC = () => {
         ) : (
           <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm text-xs text-slate-400">Cargando datos de contacto…</div>
         )}
-
-        {/* Horario de apertura: fuente única para web pública, disponibilidad y app */}
+      </>
+    ),
+    hours: (
+      <>
         {weekLoadError ? (
           <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm text-xs text-red-600 font-semibold flex items-center justify-between gap-3" role="alert">
             {weekLoadError}
@@ -282,6 +317,22 @@ export const CrmSettings: React.FC = () => {
         ) : week.length ? (
           <ClinicHoursEditor
             footer={saveAllButton('hours')}
+            extra={(
+              <div className="max-w-xs text-xs">
+                <label className="block font-bold text-slate-700 mb-1">Antelación mínima para reservar (horas):</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={48}
+                  value={minNoticeHours}
+                  onChange={e => setMinNoticeHours(Number(e.target.value))}
+                  className="w-full p-2.5 rounded-xl border border-slate-200"
+                />
+                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                  Impide que pacientes reserven citas con menos de estas horas de margen.
+                </span>
+              </div>
+            )}
             week={week}
             errors={weekErrors}
             onChange={next => {
@@ -292,51 +343,10 @@ export const CrmSettings: React.FC = () => {
         ) : (
           <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm text-xs text-slate-400">Cargando horario de apertura…</div>
         )}
-
-        {/* Reglas de Reserva de Citas */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
-          <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-            <Clock className="w-4 h-4 text-brand-600" /> Reglas de Reserva de Agenda
-          </h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">
-                Antelación mínima para reservar (horas):
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={48}
-                value={minNoticeHours}
-                onChange={e => setMinNoticeHours(Number(e.target.value))}
-                className="w-full p-2.5 rounded-xl border border-slate-200"
-              />
-              <span className="text-[10px] text-slate-400 mt-0.5 block">
-                Impide que pacientes reserven citas con menos de estas horas de margen.
-              </span>
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">
-                Margen de limpieza entre citas (minutos):
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={30}
-                value={bufferMinutes}
-                onChange={e => setBufferMinutes(Number(e.target.value))}
-                className="w-full p-2.5 rounded-xl border border-slate-200"
-              />
-              <span className="text-[10px] text-slate-400 mt-0.5 block">
-                Tiempo reservado para desinfección y preparación del gabinete.
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Configuración de Wawp & WhatsApp */}
+      </>
+    ),
+    wawp: (
+      <>
         <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
           <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-emerald-600" /> Integración con Wawp (https://wawp.net/en)
@@ -393,16 +403,52 @@ export const CrmSettings: React.FC = () => {
             </div>
           </div>
         </div>
+      </>
+    ),
+  };
 
-        {/* Submit */}
-        <div className="flex justify-end">
-          {saveAllButton('bottom')}
+  return (
+    <div className="space-y-6">
+      {notice.modal}
+      
+      {toastMsg && (
+        <div className="fixed top-4 right-4 z-50 p-4 rounded-2xl bg-emerald-600 text-white shadow-xl flex items-center gap-2 text-xs font-bold animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4" /> {toastMsg}
         </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+            Configuración General
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Identidad visual, datos de contacto, horario de apertura, reglas de reserva y pasarela Wawp.
+          </p>
+        </div>
+        {saveAllButton('header')}
+      </div>
+
+      {prodLocked && (
+        <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-xs font-semibold text-amber-800" role="alert">
+          Despliegue bloqueado (PROD_MOD_VERCEL=true): los ajustes no se pueden cambiar y el envío de WhatsApp está deshabilitado. Para permitir cambios, pon la variable a false en el servidor y reinicia el backend.
+        </div>
+      )}
+
+      <form id="crm-settings-form" onSubmit={handleSave} className="space-y-6" noValidate>
+        
+        {sectionOrder.map(id => (
+          <SettingsSection key={id} id={id} collapsed={!!collapsed[id]} onToggle={() => toggleSection(id)} onMove={moveSection}>
+            {sections[id]}
+          </SettingsSection>
+        ))}
 
       </form>
 
       {/* Acceso al panel: formulario propio (no se guarda con «Guardar Todos los Ajustes») */}
-      <CrmAccessSettings disabled={prodLocked} onSaved={msg => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 4000); }} />
+      <SettingsSection id="access" collapsed={!!collapsed.access} onToggle={() => toggleSection('access')}>
+        <CrmAccessSettings disabled={prodLocked} onSaved={msg => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 4000); }} />
+      </SettingsSection>
 
     </div>
   );

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { supabaseAdmin, config } from '../../config/index.js';
+import { blockSettingsChanges } from '../../middleware/prodLock.js';
 import { DAY_NAMES_ES } from '@clinica-eugenia/shared';
 import { z } from 'zod';
 const router = Router();
@@ -125,7 +126,7 @@ const dayScheduleSchema = z.object({
 const weekScheduleSchema = z.array(dayScheduleSchema).length(7, 'Hay que enviar los 7 días de la semana.')
     .refine(days => new Set(days.map(d => d.day_of_week)).size === 7, 'Cada día de la semana debe aparecer una sola vez.');
 // PUT /api/v1/schedules/clinic - Actualizar horario semanal de la clínica (fuente única para web, disponibilidad y app)
-router.put('/clinic', async (req, res, next) => {
+router.put('/clinic', blockSettingsChanges, async (req, res, next) => {
     try {
         const parsed = weekScheduleSchema.safeParse(req.body?.schedules);
         if (!parsed.success) {

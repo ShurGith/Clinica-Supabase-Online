@@ -17,10 +17,33 @@ async function loadClinic() {
   return data;
 }
 
+// Maps Embed API si Google está habilitado y la clave es válida; si no, el mapa embebido sin clave
+let keyCheck: { ok: boolean; at: number } | null = null;
+async function googleKeyWorks(query: string) {
+  if (keyCheck && Date.now() - keyCheck.at < 10 * 60 * 1000) return keyCheck.ok;
+  let ok = false;
+  try {
+    const origin = config.corsOrigin !== '*' ? config.corsOrigin.split(',')[0].trim() : 'http://localhost:5173';
+    const r = await fetch(`https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(config.google.apiKey)}&q=${encodeURIComponent(query)}`, { headers: { Referer: `${origin}/` } });
+    ok = r.ok && !/not authorized|ApiNotActivated|InvalidKey|RefererNotAllowed/i.test(await r.text());
+  } catch { ok = false; }
+  keyCheck = { ok, at: Date.now() };
+  return ok;
+}
+async function resolveMapEmbedUrl(query: string) {
+  if (config.google.enabled && config.google.apiKey && await googleKeyWorks(query)) {
+    return `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(config.google.apiKey)}&q=${encodeURIComponent(query)}&language=es`;
+  }
+  return `https://www.google.com/maps?q=${encodeURIComponent(query)}&hl=es&z=16&output=embed`;
+}
+
 router.get('/public', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     res.setHeader('Cache-Control', 'no-cache');
-    res.json({ success: true, data: await loadClinic() });
+    const clinic = await loadClinic();
+    const query = [clinic.name, clinic.address, clinic.postal_code, clinic.city].filter(Boolean).join(', ');
+    const maps_embed_url = query ? await resolveMapEmbedUrl(query) : null;
+    res.json({ success: true, data: { ...clinic, maps_embed_url } });
   } catch (err) {
     next(err);
   }

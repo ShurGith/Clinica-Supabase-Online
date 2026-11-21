@@ -5,6 +5,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { config, supabaseAdmin } from '../../config/index.js';
+import { blockSettingsChanges } from '../../middleware/prodLock.js';
 const router = Router();
 const PUBLIC_FIELDS = 'name, phone, emergency_phone, whatsapp_phone, email, address, postal_code, city, province, country, google_maps_url';
 async function loadClinic() {
@@ -13,10 +14,36 @@ async function loadClinic() {
         throw error;
     return data;
 }
+// Maps Embed API si Google está habilitado y la clave es válida; si no, el mapa embebido sin clave
+let keyCheck = null;
+async function googleKeyWorks(query) {
+    if (keyCheck && Date.now() - keyCheck.at < 10 * 60 * 1000)
+        return keyCheck.ok;
+    let ok = false;
+    try {
+        const origin = config.corsOrigin !== '*' ? config.corsOrigin.split(',')[0].trim() : 'http://localhost:5173';
+        const r = await fetch(`https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(config.google.apiKey)}&q=${encodeURIComponent(query)}`, { headers: { Referer: `${origin}/` } });
+        ok = r.ok && !/not authorized|ApiNotActivated|InvalidKey|RefererNotAllowed/i.test(await r.text());
+    }
+    catch {
+        ok = false;
+    }
+    keyCheck = { ok, at: Date.now() };
+    return ok;
+}
+async function resolveMapEmbedUrl(query) {
+    if (config.google.enabled && config.google.apiKey && await googleKeyWorks(query)) {
+        return `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(config.google.apiKey)}&q=${encodeURIComponent(query)}&language=es`;
+    }
+    return `https://www.google.com/maps?q=${encodeURIComponent(query)}&hl=es&z=16&output=embed`;
+}
 router.get('/public', async (_req, res, next) => {
     try {
         res.setHeader('Cache-Control', 'no-cache');
-        res.json({ success: true, data: await loadClinic() });
+        const clinic = await loadClinic();
+        const query = [clinic.name, clinic.address, clinic.postal_code, clinic.city].filter(Boolean).join(', ');
+        const maps_embed_url = query ? await resolveMapEmbedUrl(query) : null;
+        res.json({ success: true, data: { ...clinic, maps_embed_url } });
     }
     catch (err) {
         next(err);
@@ -47,7 +74,7 @@ const clinicSchema = z.object({
     google_maps_url: z.union([z.string().trim().url('El enlace de Google Maps no es una URL válida.').max(1000), z.literal('')])
         .optional().transform(v => v || null),
 });
-router.put('/', async (req, res, next) => {
+router.put('/', blockSettingsChanges, async (req, res, next) => {
     try {
         const parsed = clinicSchema.safeParse(req.body);
         if (!parsed.success) {

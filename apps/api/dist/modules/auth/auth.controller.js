@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { config } from '../../config/index.js';
+import { blockSettingsChanges } from '../../middleware/prodLock.js';
 import { SESSION_COOKIE, SESSION_TTL_SECONDS, authenticate, clearLoginFailures, envSuperUserConfigured, getDbCredentials, issueSessionToken, loginBlockedFor, recordLoginFailure, saveDbCredentials, verifyPassword, verifySessionToken, } from './auth.service.js';
 const router = Router();
 // ---- Cookies (sin dependencias) ----------------------------------------------------------------
@@ -130,7 +131,7 @@ const credentialsSchema = z.object({
     current_password: z.string().trim().max(200).optional(),
 });
 // PUT /api/v1/auth/credentials - Crear o cambiar el usuario y la contraseña guardados en BD
-router.put('/credentials', async (req, res, next) => {
+router.put('/credentials', blockSettingsChanges, async (req, res, next) => {
     try {
         const parsed = credentialsSchema.safeParse(req.body);
         if (!parsed.success) {

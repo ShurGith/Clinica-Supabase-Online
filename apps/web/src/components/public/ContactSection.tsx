@@ -87,19 +87,31 @@ export const ContactSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Map Placeholder Graphic */}
-            <a
-              href={mapsHref(clinic)}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-3xl overflow-hidden border border-slate-200/80 bg-slate-100 hover:bg-slate-200/60 transition h-48 relative flex items-center justify-center text-center p-4"
-            >
-              <div>
-                <MapPin className="w-8 h-8 text-red-500 mx-auto mb-1" />
-                <span className="font-bold text-slate-900 text-xs block">{shortAddress(clinic) || 'Cargando…'}</span>
-                <span className="text-[11px] font-semibold text-brand-700">Ver en Google Maps</span>
+            {clinic?.maps_embed_url ? (
+              <div className="rounded-3xl overflow-hidden border border-slate-200/80 bg-slate-100 h-64 relative">
+                <iframe
+                  title="Ubicación de la clínica"
+                  src={clinic.maps_embed_url}
+                  className="absolute inset-0 w-full h-full border-0"
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
-            </a>
+            ) : (
+              <a
+                href={mapsHref(clinic)}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-3xl overflow-hidden border border-slate-200/80 bg-slate-100 hover:bg-slate-200/60 transition h-48 relative flex items-center justify-center text-center p-4"
+              >
+                <div>
+                  <MapPin className="w-8 h-8 text-red-500 mx-auto mb-1" />
+                  <span className="font-bold text-slate-900 text-xs block">{shortAddress(clinic) || 'Cargando…'}</span>
+                  <span className="text-[11px] font-semibold text-brand-700">Ver en Google Maps</span>
+                </div>
+              </a>
+            )}
           </div>
 
           {/* Form Column */}

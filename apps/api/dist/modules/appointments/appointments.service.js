@@ -185,26 +185,35 @@ export class AppointmentsService {
         if (error)
             throw error;
         // Notificar reprogramación por WhatsApp
+        const whatsapp = { requested: false, sent: false };
         if (params.notifyWhatsApp !== false && updated?.patient?.phone) {
-            const newStartDate = new Date(params.startTime);
-            const dateFormatted = newStartDate.toLocaleDateString('es-ES', {
-                timeZone: config.wawp.appTimezone,
-                day: 'numeric',
-                month: 'long',
-            });
-            const timeFormatted = newStartDate.toLocaleTimeString('es-ES', {
-                timeZone: config.wawp.appTimezone,
-                hour: '2-digit',
-                minute: '2-digit',
-            });
-            await whatsappProvider.sendTemplate(updated.patient.phone, 'cita_reprogramada', {
-                nombre: updated.patient.first_name,
-                fecha: dateFormatted,
-                hora: timeFormatted,
-                profesional: `${updated.professional.first_name} ${updated.professional.last_name}`,
-            }, updated.id);
+            whatsapp.requested = true;
+            try {
+                const newStartDate = new Date(params.startTime);
+                const dateFormatted = newStartDate.toLocaleDateString('es-ES', {
+                    timeZone: config.wawp.appTimezone,
+                    day: 'numeric',
+                    month: 'long',
+                });
+                const timeFormatted = newStartDate.toLocaleTimeString('es-ES', {
+                    timeZone: config.wawp.appTimezone,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                });
+                await whatsappProvider.sendTemplate(updated.patient.phone, 'cita_reprogramada', {
+                    nombre: updated.patient.first_name,
+                    fecha: dateFormatted,
+                    hora: timeFormatted,
+                    profesional: `${updated.professional.first_name} ${updated.professional.last_name}`,
+                }, updated.id);
+                whatsapp.sent = true;
+            }
+            catch (err) {
+                // La cita ya está movida: un fallo del aviso no debe deshacer ni ocultar el cambio
+                whatsapp.error = err?.message || 'No se pudo enviar el WhatsApp';
+            }
         }
-        return updated;
+        return { ...updated, whatsapp };
     }
     /**
      * Redimensiona una cita (cambio de duración en FullCalendar eventResize)

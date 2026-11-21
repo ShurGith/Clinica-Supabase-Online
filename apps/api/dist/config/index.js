@@ -79,7 +79,14 @@ export const config = {
         // Solo dígitos con prefijo internacional (p. ej. 34611223344); vacío = bloquear todo en MODO_DEV.
         devPhoneNumber: /^\d{8,15}$/.test(devPhoneDigits) ? devPhoneDigits : '',
     },
+    google: {
+        enabled: /^(true|1|yes|si|sí)$/i.test((process.env.GOOGLE_ENABLED || '').trim()),
+        apiKey: (process.env.GOOGLE_API_KEY || '').trim(),
+    },
     clinicId: process.env.DEFAULT_CLINIC_ID || 'e1111111-1111-1111-1111-111111111111',
+    // Bloqueo de producción (Vercel): con PROD_MOD_VERCEL=true no se pueden cambiar
+    // los ajustes de Configuración ni enviar ningún WhatsApp.
+    prodModVercel: /^(true|1|yes|si|sí)$/i.test((process.env.PROD_MOD_VERCEL || '').trim()),
 };
 // Supabase Admin Client (Bypasses RLS for backend background jobs and triggers)
 export const supabaseAdmin = createClient(config.supabase.url, config.supabase.serviceRoleKey || config.supabase.anonKey, {

@@ -9,11 +9,11 @@
   --brand-200: 153 246 228;
   --brand-300: 94 234 212;
   --brand-400: 45 212 191;
-  --brand-500: 20 184 166;
-  --brand-600: 13 148 136;
-  --brand-700: 15 118 110;
-  --brand-800: 17 94 89;
-  --brand-900: 19 78 74;
+  --brand-500: 13 148 136;
+  --brand-600: 15 118 110;
+  --brand-700: 17 94 89;
+  --brand-800: 19 78 74;
+  --brand-900: 4 47 46;
 }
 
 
@@ -21,91 +21,53 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Custom styling for FullCalendar */
+/* FullCalendar: agenda cálida tipo papel */
 .fc {
   font-family: inherit;
-  --fc-border-color: #e2e8f0;
-  --fc-today-bg-color: rgb(var(--brand-50));
+  --fc-border-color: #ebe7dd;
+  --fc-today-bg-color: rgba(31, 92, 63, 0.06);
   --fc-event-border-color: transparent;
+  --fc-page-bg-color: #fbf9f4;
 }
-
-.fc .fc-toolbar-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #0f172a;
+.fc-theme-standard td, .fc-theme-standard th, .fc-theme-standard .fc-scrollgrid {
+  border-color: #ebe7dd;
 }
-
-.fc .fc-button-primary {
-  background-color: rgb(var(--brand-600));
-  border-color: rgb(var(--brand-600));
-  font-weight: 600;
-  border-radius: 0.5rem;
-  padding: 0.4rem 0.85rem;
-  text-transform: capitalize;
+.fc-theme-standard .fc-scrollgrid { border: 0; }
+.fc-col-header-cell {
+  background: #fbf9f4;
+  border-bottom: 1px solid #ebe7dd !important;
+  padding: 0 !important;
 }
-
-.fc .fc-button-primary:hover {
-  background-color: rgb(var(--brand-700));
-  border-color: rgb(var(--brand-700));
+.fc-col-header-cell-cushion {
+  display: block;
+  padding: 0 !important;
+  text-decoration: none !important;
 }
-
-.fc .fc-button-primary:disabled {
-  background-color: #94a3b8;
-  border-color: #94a3b8;
+.fc-timegrid-slot { height: 18px !important; border-color: #f1eee6 !important; }
+.fc-timegrid-slot-minor { border-top-style: solid !important; }
+.fc-timegrid-slot-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #78716c;
+  vertical-align: top;
+  border-color: transparent !important;
 }
-
-.fc .fc-button-active {
-  background-color: rgb(var(--brand-800)) !important;
-  border-color: rgb(var(--brand-800)) !important;
-}
-
+.fc-timegrid-slot-label-cushion { transform: translateY(-50%); display: block; padding-right: 10px; }
+.fc-timegrid-axis { border-color: #ebe7dd !important; }
+.fc-timegrid-event-harness { margin: 1px 2px; }
 .fc-event {
-  border-radius: 6px;
-  padding: 2px 4px;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
   cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-  font-size: 0.82rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
-
-.fc-event:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-/* Horas y días fuera del horario de apertura: bloqueados (no se crean ni se mueven citas ahí) */
+.fc-event-main { padding: 0 !important; height: 100%; }
+.fc-timegrid-col.fc-day-today { background: rgba(31, 92, 63, 0.06); }
+.fc-highlight { background: transparent !important; border: 1.5px dashed #1f5c3f; border-radius: 6px; }
 .fc .fc-non-business {
-  background: repeating-linear-gradient(
-    -45deg,
-    rgb(241 245 249 / 0.9) 0 6px,
-    rgb(226 232 240 / 0.9) 6px 7px
-  );
+  background: repeating-linear-gradient(-45deg, rgba(120, 113, 108, 0.14) 0 6px, rgba(120, 113, 108, 0.32) 6px 8px) !important;
 }
-.fc .fc-timegrid-col.fc-day-today .fc-non-business,
-.fc .fc-daygrid-day.fc-day-today .fc-non-business {
-  background: repeating-linear-gradient(
-    -45deg,
-    rgb(var(--brand-50) / 0.9) 0 6px,
-    rgb(var(--brand-100) / 0.9) 6px 7px
-  );
-}
-
-/* En móvil la barra de FullCalendar se reparte en varias líneas en vez de desbordar */
-@media (max-width: 639px) {
-  .fc .fc-toolbar {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  .fc .fc-toolbar-title {
-    font-size: 1rem;
-  }
-  .fc .fc-button {
-    padding: 0.35rem 0.6rem;
-    font-size: 0.75rem;
-  }
-}
-
-.fc-theme-standard td, .fc-theme-standard th {
-  border-color: #e2e8f0;
-}
+.fc-timegrid-now-indicator-line { border-color: #b4694f !important; border-width: 1.5px !important; }
+.fc-timegrid-now-indicator-arrow { border-color: #b4694f !important; }
 

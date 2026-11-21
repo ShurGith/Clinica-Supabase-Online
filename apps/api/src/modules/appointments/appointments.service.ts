@@ -233,7 +233,10 @@ export class AppointmentsService {
     if (error) throw error;
 
     // Notificar reprogramación por WhatsApp
+    const whatsapp: { requested: boolean; sent: boolean; error?: string } = { requested: false, sent: false };
     if (params.notifyWhatsApp !== false && updated?.patient?.phone) {
+      whatsapp.requested = true;
+      try {
       const newStartDate = new Date(params.startTime);
       const dateFormatted = newStartDate.toLocaleDateString('es-ES', {
         timeZone: config.wawp.appTimezone,
@@ -257,9 +260,14 @@ export class AppointmentsService {
         },
         updated.id
       );
+      whatsapp.sent = true;
+      } catch (err: any) {
+        // La cita ya está movida: un fallo del aviso no debe deshacer ni ocultar el cambio
+        whatsapp.error = err?.message || 'No se pudo enviar el WhatsApp';
+      }
     }
 
-    return updated;
+    return { ...updated, whatsapp };
   }
 
   /**

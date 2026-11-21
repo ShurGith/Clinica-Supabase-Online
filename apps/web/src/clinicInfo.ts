@@ -15,6 +15,7 @@ export interface ClinicInfo {
   province: string | null;
   country: string | null;
   google_maps_url: string | null;
+  maps_embed_url?: string | null;
 }
 
 let cached: Promise<ClinicInfo> | null = null;

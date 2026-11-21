@@ -9,6 +9,7 @@ const server = app.listen(config.port, '0.0.0.0', () => {
   🚀 Servidor activo en: http://localhost:${config.port}
   📡 Endpoints base:    http://localhost:${config.port}/api/v1/health
   💬 WhatsApp Wawp:     ${config.wawp.sandboxMode ? 'MODO SANDBOX (Simulador local)' : 'PRODUCCIÓN CONECTADA'}
+  🔐 PROD_MOD_VERCEL:   ${config.prodModVercel ? 'ACTIVO · ajustes bloqueados y WhatsApp deshabilitado' : 'inactivo'}
   🧪 MODO_DEV:          ${config.wawp.devMode ? `ACTIVO · solo se envía al número terminado en ${config.wawp.devPhoneNumber.slice(-4) || '— (ninguno: todo bloqueado)'}` : 'desactivado'}
   🔒 Restricción:       CERO PAGOS / CERO TRANSACCIONES ECONÓMICAS
   ══════════════════════════════════════════════════════════

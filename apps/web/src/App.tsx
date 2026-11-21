@@ -21,15 +21,16 @@ import { CrmDashboard } from './components/crm/CrmDashboard.js';
 import { CrmCalendar } from './components/crm/CrmCalendar.js';
 import { CrmPatients } from './components/crm/CrmPatients.js';
 import { CrmSchedules } from './components/crm/CrmSchedules.js';
+import { CrmProfessionals } from './components/crm/CrmProfessionals.js';
 import { CrmWhatsApp } from './components/crm/CrmWhatsApp.js';
 import { CrmSettings } from './components/crm/CrmSettings.js';
 
 // La vista actual vive en la URL (/, /crm/agenda, /crm/configuracion…) para que recargar o usar
 // atrás/adelante mantenga la página. Las anclas de la web pública (#horarios…) siguen funcionando.
-type CrmTab = 'dashboard' | 'calendar' | 'patients' | 'schedules' | 'whatsapp' | 'settings';
+type CrmTab = 'dashboard' | 'calendar' | 'patients' | 'professionals' | 'schedules' | 'whatsapp' | 'settings';
 const TAB_SLUGS: Record<CrmTab, string> = {
   dashboard: 'dashboard', calendar: 'agenda', patients: 'pacientes',
-  schedules: 'horarios', whatsapp: 'whatsapp', settings: 'configuracion',
+  professionals: 'profesionales', schedules: 'horarios', whatsapp: 'whatsapp', settings: 'configuracion',
 };
 const DEFAULT_TAB: CrmTab = 'calendar';
 
@@ -155,6 +156,7 @@ export const App: React.FC = () => {
         {crmTab === 'calendar' && <CrmCalendar />}
         {crmTab === 'patients' && <CrmPatients />}
         {crmTab === 'schedules' && <CrmSchedules />}
+        {crmTab === 'professionals' && <CrmProfessionals />}
         {crmTab === 'whatsapp' && <CrmWhatsApp />}
         {crmTab === 'settings' && <CrmSettings />}
       </CrmLayout>

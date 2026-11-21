@@ -40,6 +40,15 @@ export const api = {
   
   // Profesionales
   getProfessionals: () => fetchJson<any[]>('/professionals'),
+  getManagedProfessionals: () => fetchJson<any[]>('/professionals/manage/all'),
+  createProfessional: (data: any) => fetchJson<any>('/professionals', { method: 'POST', body: JSON.stringify(data) }),
+  updateProfessional: (id: string, data: any) => fetchJson<any>(`/professionals/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  updateProfessionalSchedule: (id: string, schedules: any[]) =>
+    fetchJson<any>(`/professionals/${id}/schedule`, { method: 'PUT', body: JSON.stringify({ schedules }) }),
+  createProfessionalTimeOff: (id: string, data: { start_date: string; end_date: string; reason: string }) =>
+    fetchJson<any>(`/professionals/${id}/time-off`, { method: 'POST', body: JSON.stringify(data) }),
+  deleteProfessionalTimeOff: (id: string, timeOffId: string) =>
+    fetchJson<any>(`/professionals/${id}/time-off/${timeOffId}`, { method: 'DELETE' }),
 
   // Horarios públicos
   // Identidad pública (título, subtítulo, color de marca)

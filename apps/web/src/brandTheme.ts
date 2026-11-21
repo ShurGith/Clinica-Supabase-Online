@@ -11,7 +11,7 @@ export interface SiteIdentity {
   primary_color?: string | null;
 }
 
-export const DEFAULT_BRAND = '#0d9488';
+export const DEFAULT_BRAND = '#0f766e';
 const STORAGE_KEY = 'brand-color';
 const SHADES: [number, 'white' | 'black' | null, number][] = [
   [50, 'white', 0.95], [100, 'white', 0.85], [200, 'white', 0.7], [300, 'white', 0.5], [400, 'white', 0.25],
@@ -23,7 +23,12 @@ const hexToRgb = (hex: string) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2
 
 /** Paleta 50–900 como tripletes «R G B» para las variables CSS. */
 export function brandPalette(hex: string): Record<number, string> {
-  const base = hexToRgb(hex);
+  // El tono 600 lleva texto blanco en los botones: se oscurece hasta llegar a un contraste WCAG AA (4,5:1)
+  let color = hex;
+  for (let i = 0; i < 20 && whiteContrast(color) < 4.5; i++) {
+    color = '#' + hexToRgb(color).map(c => Math.round(c * 0.95).toString(16).padStart(2, '0')).join('');
+  }
+  const base = hexToRgb(color);
   const out: Record<number, string> = {};
   for (const [shade, mixWith, amount] of SHADES) {
     const target = mixWith === 'white' ? 255 : 0;

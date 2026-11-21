@@ -86,6 +86,11 @@ export const config = {
     devPhoneNumber: /^\d{8,15}$/.test(devPhoneDigits) ? devPhoneDigits : '',
   },
 
+  google: {
+    enabled: /^(true|1|yes|si|sí)$/i.test((process.env.GOOGLE_ENABLED || '').trim()),
+    apiKey: (process.env.GOOGLE_API_KEY || '').trim(),
+  },
+
   clinicId: process.env.DEFAULT_CLINIC_ID || 'e1111111-1111-1111-1111-111111111111',
 
   // Bloqueo de producción (Vercel): con PROD_MOD_VERCEL=true no se pueden cambiar
